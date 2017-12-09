@@ -63,9 +63,9 @@ error = {
     "z_error": "NotZipFileError: It isn`t zipfile"
 }
 list_command_help = {
-    "echo!out": "echo!out пример или echo!out %OS% OS это базавая переменная",
-    "echo!in": "создает переменные echo!in %название переменной% < пример ",
-    "writefile": r"Вписывает в файл информацию \n -- делает пробел пример : writefile file.txt < Привет\nмир",
+    "echo!out": "...",
+    "echo!in": "...",
+    "write": r"...",
 }
 list_command_logic = {
     "echo!out": r"echo!out\s*(?P<out>.*)",
