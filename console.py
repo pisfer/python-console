@@ -5,6 +5,7 @@
 #############################
 """By Gleb"""
 """made in 2017"""
+print("1")
 from re import *
 import os
 import sys
@@ -14,30 +15,7 @@ import json as js
 import subprocess as subr
 import chardet
 from random import randint, randrange
-
-settings = {
-    "limits": {
-        "length_jokes": 4
-    },
-    "type_jokes": 3,
-    "game": True,
-    "start_preview": [True, True],
-    "first_dir": "C:\\",
-    "input_str": ">>>",
-    "base_wars": {
-        "list": ["hi", "from", "co"]
-    }
-}
-os.chdir(settings['first_dir'])
-__author__ = "Gleb"
-__version__ = "0.0.2"
-i = ""
-if settings['start_preview'][0]:
-    print("""Console Original 
-          ╔═ ╔╗
-          ╚═ ╚╝""")
-    print("by", __author__ + ", version -", __version__)
-xc = 0
+print("2=====")
 ######################
 # 1 - Анекдот;
 # 2 - Рассказы;
@@ -54,6 +32,29 @@ xc = 0
 # 16 - Тосты (+18);
 # 18 - Статусы (+18);
 ######################
+settings = {
+    "limits": {
+        "length_jokes": 4
+    },
+    "type_jokes": "3",
+    "game": True,
+    "start_preview": [True, True],
+    "first_dir": "C:\\",
+    "input_str": ">>>",
+    "base_wars": {
+        "list": ["hi", "from", "co"]
+    }
+}
+os.chdir(settings['first_dir'])
+__author__ = "Gleb"
+__version__ = "0.0.3 beta_test"
+i = ""
+if settings['start_preview'][0]:
+    print("""Console Original 
+          ╔═ ╔╗
+          ╚═ ╚╝""")
+    print("by", __author__ + ", version -", __version__)
+xc = 0
 error = {
     "s_error": "SyntaxError: invalid syntax.",
     "n_error": "NameError: name of war is not defined.",
@@ -62,10 +63,10 @@ error = {
     "e_error": "FileExistsError: Dir exists.",
     "z_error": "NotZipFileError: It isn`t zipfile"
 }
-list_command_help = {
-    "echo!out": "...",
-    "echo!in": "...",
-    "write": r"...",
+list_command_help = { # <- это надо доработать 
+    "echo!out": "echo!out пример или echo!out %OS% OS это базавая переменная",
+    "echo!in": "создает переменные echo!in %название переменной% < пример ",
+    "writefile": r"Вписывает в файл информацию \n -- делает пробел пример : writefile file.txt < Привет\nмир",
 }
 list_command_logic = {
     "echo!out": r"echo!out\s*(?P<out>.*)",
@@ -83,7 +84,8 @@ list_command_logic = {
     "zip!in": r"zip!in (?P<file>.+) < (?P<data>.+)",
     "zip!out": r"zip!out (?P<files>.+) > (?P<data>.+)",
     "index": r"index!(?P<tag>.+)!(?P<ind>\d)\s*<\s*(?P<ni>.+)",  # index!%op%!3 < new index
-    "http!json!get": r"http!json!get\s+<(?P<tag>.*)>:(?P<ind>.*):" # http!json!get <google.com>:contents:
+    "http!json!get": r"http!json!get\s+<(?P<tag>.*)>:(?P<ind>.*):",  # http!json!get <google.com>:contents:
+    "help": r"help"
 }
 if settings['start_preview'][1]:
     print("Commands ")
@@ -91,12 +93,7 @@ if settings['start_preview'][1]:
 
 
 def mult_list(f):
-    v = split(r"[\s,]", f)
-    clist = []
-    clist.append(v[0][2:])
-    for i in v[1:len(v) - 1]:
-        clist.append(i)
-    clist.append(v[len(v) - 1][:-2])
+    clist = js.loads(f)
     return clist
 
 
@@ -200,7 +197,6 @@ def game_calc():
 def game_ghosts():
     global xc
     while True:
-        print("Ghost Game by Gleb")
         feeling_brave = True
         score = 0
         while feeling_brave:
@@ -228,28 +224,38 @@ def game_ghosts():
             break
 
 
-wars = {
-    "OS": sys.platform,
-    "list": ["hi", "from", "co"]
-}
+def game_jokes():
+    import requests
+    print("Чтобы выйти введите close")
+    while True:
+        b = requests.get(r"http://rzhunemogu.ru/RandJSON.aspx?CType=" + settings['type_jokes'])
+        nm = repr(b.text)[1:-1]
+        if len(findall(r"\\n", nm)) <= settings['limits']['length_jokes']:
+            bor = input("========")
+            if match(r"close", bor):
+                break
+            try:
+                t = js.loads(repr(b.text)[1:-1].replace(r"\xa0", " "))
+                print(t['content'])
+            except:
+                print("ERROR: Ответ сервера не коректный.\nСервер вернул не коректный текст!")
+        else:
+            pass
 
 
-def is_list(string):
-    if match(r"_\(.*\)_", string):
-        return True
-    else:
-        return False
+wars = settings["base_wars"]
+wars["OS"] = sys.platform
 
 
 def ward(j, out=False):
     if out:
-        e = match(r"%(?P<in>([\w\s]*))%", j)
+        e = match(r"%(?P<in>([\w\s]+))%", j)
         if e:
             return [True, e.group("in")]
         else:
             return False
     else:
-        if match(r"%(?P<in>([\w\s]*))%", j):
+        if match(r"%(?P<in>([\w\s]+))%", j):
             return True
         else:
             return False
@@ -261,43 +267,18 @@ def is_war(dcount, war=None):
     else:
         war_name = war
     falip = dcount.group(war_name)
-    li2 = findall(r"%[\w\s]*%", dcount.group(war_name))
-    lis2 = findall(r"%[\w\s]*:[\w\s]*%", dcount.group(war_name))
-    li = search(r"%(?P<in>[\w\s]*)%", dcount.group(war_name))
-    lu = search(r"%(?P<in>[\w\s]*):(?P<ind>[\w\s]*)%", dcount.group(war_name))
-    if lu:
-        try:
-            if os.path.isdir(str(wars[lu.group("in")])):
-                for key in li2:  # .replace("\\", r"\\")
-                    falip = sub(key, wars[match(r"%(?P<in>([\w\s]*))%", key).group("in")], falip)
-                return falip
-            else:
-                for key in li2:  # match(r"%(?P<in>([\w\s]*))%", key).group("in")
-                    falip = sub(key, str(wars[match(r"%(?P<in>([\w\s]*))%", key).group("in")]), falip)
-                for key_list in lis2:  # match(r"%(?P<in>([\w\s]*))%", key).group("in")
-
-                    lipa = match(r"%(?P<in>[\w\s]*):(?P<ind>[\w\s]*)%", key_list)
-                    falip = sub(key_list, str(wars[lipa.group("in")][int(lipa.group('ind'))]), falip)
-                return falip
-        except KeyError:
-            return error["n_error"]
-    elif li:
-        try:
-            if os.path.isdir(str(wars[li.group("in")])):
-                for key in li2:  # .replace("\\", r"\\")
-                    falip = sub(key, wars[match(r"%(?P<in>([\w\s]*))%", key).group("in")], falip)
-                return falip
-            else:
-                for key in li2:  # match(r"%(?P<in>([\w\s]*))%", key).group("in")
-                    falip = sub(key, str(wars[match(r"%(?P<in>([\w\s]*))%", key).group("in")]), falip)
-                return falip
-        except KeyError:
-            return error["n_error"]
-    else:
-        try:
-            return dcount.group(war_name)
-        except KeyError:
-            return error["s_error"]
+    k = findall(r"%[^(%).]*%", falip)
+    for m in k:
+        e = match(r"%(?P<tag>[^(:).]*)%", m)
+        g = match(r"%(?P<tag>\w+):(?P<fe>[\d\w]+)%", m)
+        if e:
+            falip = sub(m, str(wars[e.group("tag")]), falip)
+        elif g:
+            try:
+                falip = sub(m, str(wars[g.group("tag")][int(g.group("fe"))]), falip)
+            except:
+                falip = sub(m, str(wars[g.group("tag")][g.group("fe")]), falip)
+    return falip
 
 
 while True:
@@ -317,6 +298,7 @@ while True:
     ein = match(list_command_logic["e!in"], i)
     eout = match(list_command_logic["e!out"], i)
     index = match(list_command_logic["index"], i)
+    hl = match(list_command_logic["help"], i)
     if echout:
         print(is_war(echout))
     elif index:  # index!(?P<tag>.+)!(?P<ind>\d)\s*<\s*(?P<ni>.+)
@@ -326,6 +308,8 @@ while True:
                 kou = wars[inis2_war]
                 kou[int(is_war(index, "ind"))] = is_war(index, "ni")
                 wars[inis2_war] = kou
+    elif hl:
+        print(list(list_command_logic.keys()))
     elif eout:
         print(is_war(eout))
     elif zipin:  # zip!in H:\1111.zip < (C:\Users\Gleb\Desktop\сайты.txt,C:\Users\Gleb\Desktop\istock_000020116885large_-_copy-700x461.jpg)
@@ -336,9 +320,9 @@ while True:
         z.close()
     elif wr:
         bnb = list(wars.items())
-        line_war = bnb[0][0] + " = " + bnb[0][1]
+        line_war = str(bnb[0][0]) + " = " + str(bnb[0][1])
         for list_wars in list(bnb)[1:]:
-            line_war = str(line_war) + ", " + str(list_wars[0]) + " = " + str(list_wars[1])
+            line_war = str(line_war) + ", " + str(list_wars[0]) + " = " + str(list_wars[1]) + str(type(list_wars[1]))
         print(line_war)
     elif zipin:
         if zipfile.is_zipfile(is_war(zipout, "files")):
@@ -376,31 +360,46 @@ while True:
             print(error["z_error"])
     elif ein:
         vi = match(r"%(?P<in>([\w\s]*))%", ein.group("in"))
-        if is_list(is_war(ein, "data")):
+        tr_fl = False
+        try:
+            js_ty = js.loads(is_war(ein, "data"))
+            tr_fl = True
+        except:
+            pass
+        if tr_fl:
             if vi:
                 wars[vi.group("in")] = mult_list(is_war(ein, "data"))
                 print("переменная " + vi.group("in") + " успешно создана")
             else:
+                print("list_error")
                 print(error["s_error"])
         else:
             if vi:
                 wars[vi.group("in")] = is_war(ein, "data")
                 print("переменная " + vi.group("in") + " успешно создана")
             else:
+                print("war_error")
                 print(error["s_error"])
     elif echoin:
         vi = match(r"%(?P<in>([\w\s]*))%", echoin.group("in"))
-        if is_list(is_war(echoin, "data")):
+        try:
+            js_ty = js.load(is_war(echoin, "data"))
+            js_ty = True
+        except:
+            js_ty = False
+        if js_ty:
             if vi:
                 wars[vi.group("in")] = mult_list(is_war(echoin, "data"))
                 print("переменная " + vi.group("in") + " успешно создана")
             else:
+                print("list_error")
                 print(error["s_error"])
         else:
             if vi:
                 wars[vi.group("in")] = is_war(echoin, "data")
                 print("переменная " + vi.group("in") + " успешно создана")
             else:
+                print("war_error")
                 print(error["s_error"])
     elif cd:
         if cd.group("out") == "..":
@@ -438,6 +437,8 @@ while True:
                 game_ghosts()
             elif is_war(start, "in") == "calc_game":
                 game_calc()
+            elif is_war(start, "in") == "jokes_game":
+                game_jokes()
         elif is_war(start, "data") == "file":
             cmd = 'start ' + is_war(start, "in")
             p = subr.Popen(cmd, shell=True)
